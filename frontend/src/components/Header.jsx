@@ -1,11 +1,20 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+import {useState} from 'react'
+import Button from './Button'
 
 const Header = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  const handleLogout = () => {
+    // Perform logout logic here
+    setIsLoggedIn(false)
+  }
+
   return (
     <>
         <nav className='navbar container pt-3 pb-3 align-items-start'>
             <Link className='navbar-brand text-light' to="/">Stock Prediction Portal</Link>
-
             <div>
               {isLoggedIn ? (
                 <>
