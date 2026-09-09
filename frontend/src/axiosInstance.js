@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_BACKEND_BASE_API
+const baseURL = import.meta.env.VITE_BACKEND_BASE_API || 'http://127.0.0.1:8000/api/v1'
 const axiosInstance = axios.create({
     baseURL: baseURL,
     headers: {
@@ -30,9 +30,12 @@ axiosInstance.interceptors.response.use(
     // Handle failed responses
     async function(error){
         const originalRequest = error.config;
-        if(error.response.status === 401 && !originalRequest.retry){
+        if(error.response?.status === 401 && originalRequest && !originalRequest.retry){
             originalRequest.retry = true;
             const refreshToken = localStorage.getItem('refreshToken')
+            if(!refreshToken){
+                return Promise.reject(error);
+            }
             try{
                 const response = await axiosInstance.post('/token/refresh/', {refresh: refreshToken})
                 localStorage.setItem('accessToken', response.data.access)

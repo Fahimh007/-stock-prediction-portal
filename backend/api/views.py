@@ -19,16 +19,28 @@ class StockPredictionAPIView(APIView):
     def post(self, request):
         serializer = StockPredictionSerializer(data=request.data)
         if serializer.is_valid():
-            ticker = serializer.validated_data['ticker']
+            ticker = serializer.validated_data['ticker'].strip().upper()
+            ticker_aliases = {
+                'APPLE': 'AAPL',
+                'MICROSOFT': 'MSFT',
+                'GOOGLE': 'GOOGL',
+                'TESLA': 'TSLA',
+                'AMAZON': 'AMZN',
+                'NVIDIA': 'NVDA',
+            }
+            ticker = ticker_aliases.get(ticker, ticker)
 
             # Fetch the data from yfinance
             now = datetime.now()
             start = datetime(now.year-10, now.month, now.day)
             end = now
-            df = yf.download(ticker, start, end)
+            df = yf.download(ticker, start, end, auto_adjust=False, progress=False, threads=False)
             if df.empty:
                 return Response({"error": "No data found for the given ticker.",
-                                 'status': status.HTTP_404_NOT_FOUND})
+                                 'status': status.HTTP_404_NOT_FOUND},
+                                status=status.HTTP_404_NOT_FOUND)
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
             df = df.reset_index()
             # Generate Basic Plot
             plt.switch_backend('AGG')
@@ -77,7 +89,8 @@ class StockPredictionAPIView(APIView):
             scaler = MinMaxScaler(feature_range=(0,1))
 
             # Load ML Model
-            model = load_model('stock_prediction_model.keras')
+            model_path = settings.BASE_DIR.parent / 'Resources' / 'stock_prediction_model.keras'
+            model = load_model(model_path)
 
             # Preparing Test Data
             past_100_days = data_training.tail(100)

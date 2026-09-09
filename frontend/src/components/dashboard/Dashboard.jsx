@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react'
 import axiosInstance from '../../axiosInstance'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { useNavigate } from 'react-router-dom'
 
 const Dashboard = () => {
     const [ticker, setTicker] = useState('')
@@ -14,13 +15,20 @@ const Dashboard = () => {
     const [mse, setMSE] = useState()
     const [rmse, setRMSE] = useState()
     const [r2, setR2] = useState()
+    const navigate = useNavigate()
 
     useEffect(()=>{
         const fetchProtectedData = async () =>{
             try{
                 const response = await axiosInstance.get('/protected-view/');
             }catch(error){
-                console.error('Error fetching data:', error)
+                if(error.response?.status === 401){
+                    localStorage.removeItem('accessToken')
+                    localStorage.removeItem('refreshToken')
+                    navigate('/login', { replace: true })
+                }else{
+                    console.error('Error fetching data:', error)
+                }
             }
         }
         fetchProtectedData();
@@ -34,7 +42,7 @@ const Dashboard = () => {
                 ticker: ticker
             });
             console.log(response.data);
-            const backendRoot = import.meta.env.VITE_BACKEND_ROOT
+            const backendRoot = import.meta.env.VITE_BACKEND_ROOT || 'http://127.0.0.1:8000'
             const plotUrl = `${backendRoot}${response.data.plot_img}`
             const ma100Url = `${backendRoot}${response.data.plot_100_dma}`
             const ma200Url = `${backendRoot}${response.data.plot_200_dma}`
@@ -51,6 +59,8 @@ const Dashboard = () => {
                 setError(response.data.error)
             }
         }catch(error){
+            const message = error.response?.data?.error || 'Unable to generate a prediction.'
+            setError(message)
             console.error('There was an error making the API request', error)
         }finally{
             setLoading(false);
