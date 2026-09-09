@@ -4,6 +4,10 @@ import Main from './components/Main'
 import Footer from './components/Footer'
 import Register from './components/Register'
 import Login from './components/Login'
+import AuthProvider from './AuthProvider'
+import PrivateRoute from './PrivateRoute'
+import PublicRoute from './PublicRoute'
+import Dashboard from './components/dashboard/Dashboard'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 function App() {

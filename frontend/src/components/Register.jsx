@@ -17,9 +17,7 @@ const Register = () => {
     setLoading(true)
 
     const userData = {
-      username,
-      email,
-      password
+      username, email, password
     }
 
     try{
@@ -30,7 +28,7 @@ const Register = () => {
       setSuccess(true)
     }catch(err){
       setError(err.response.data)
-      console.log(err.response.data)
+      console.log('Registration error:', err.response.data)
     }finally{
       setLoading(false)
     }

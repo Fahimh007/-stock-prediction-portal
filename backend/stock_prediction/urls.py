@@ -16,12 +16,22 @@ Including another URLconf
 """
 from django.conf.urls.static import static  
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import path,include
 from django.conf import settings
+from django.conf.urls.static import static
+
+def api_root(request):
+    return JsonResponse({
+        'message': 'Stock prediction API is running.',
+        'api': '/api/v1/',
+        'admin': '/admin/',
+    })
 
 urlpatterns = [
+    path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
     # Base API Endpoints
-    path('api/V1/', include('api.urls')),
+    path('api/v1/', include('api.urls')),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
